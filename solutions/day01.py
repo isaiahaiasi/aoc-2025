@@ -1,10 +1,9 @@
-class Solution:
-    def __init__(self, path: str):
-        with open(path) as f:
-            self.raw_data = f.read()
+from utils.SolutionBase import SolutionBase
 
-    def solve1(self):
-        instructions = self.raw_data.splitlines()
+
+class Solution(SolutionBase):
+    def part1(self):
+        instructions = self.get_data_raw().splitlines()
         cur_pos = 50
         zero_count = 0
         for instr in instructions:
@@ -16,8 +15,8 @@ class Solution:
                 zero_count += 1
         return zero_count
 
-    def solve2(self):
-        instructions = self.raw_data.splitlines()
+    def part2(self):
+        instructions = self.get_data_raw().splitlines()
         cur_pos = 50
         clicks = 0
         for instr in instructions:
@@ -40,4 +39,5 @@ class Solution:
 
 if __name__ == "__main__":
     s = Solution("input/day01.txt")
-    print(s.solve1(), s.solve2())
+    s.solve(1)
+    s.solve(2)

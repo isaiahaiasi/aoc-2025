@@ -13,18 +13,22 @@ class SolutionBase:
         with self.path.open() as f:
             return f.readlines()
 
-    def solve(self, part: int, benchmark=False):
+    def solve(self, part: int, benchmark=0):
+        """
+        :param part: Part 1 or 2 of the day's puzzle
+        :param benchmark: Number of iterations to run benchmark (default 0: no benchmarking)
+        """
         assert part > 0 and part < 3, "`part` can only be 1 or 2!"
 
         fn = self.part1 if part == 1 else self.part2
 
         print(f"solution, p{part}: {fn()}")
 
-        if benchmark:
+        if benchmark > 0:
             import timeit
 
             t = timeit.Timer(fn)
-            print(f"avg time: {t.timeit(1000) / 1000:.5f}s")
+            print(f"avg time: {t.timeit(benchmark) / benchmark:.5f}s")
 
     def part1(self) -> int:
         raise NotImplementedError

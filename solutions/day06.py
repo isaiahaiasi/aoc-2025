@@ -45,4 +45,4 @@ class Solution(SolutionBase):
 
 
 if __name__ == "__main__":
-    Solution("input/day06.txt").solve(2, benchmark=True)
+    Solution("input/day06.txt").solve(2, benchmark=1000)
