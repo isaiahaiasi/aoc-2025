@@ -18,13 +18,13 @@ class SolutionBase:
 
         fn = self.part1 if part == 1 else self.part2
 
+        print(f"solution, p{part}: {fn()}")
+
         if benchmark:
             import timeit
 
             t = timeit.Timer(fn)
-            print(t.timeit(1000))
-        else:
-            print(fn())
+            print(f"avg time: {t.timeit(1000) / 1000:.5f}s")
 
     def part1(self) -> int:
         raise NotImplementedError
@@ -33,4 +33,4 @@ class SolutionBase:
         raise NotImplementedError
 
     # TODO:
-    # - testing
+    # - testing?
