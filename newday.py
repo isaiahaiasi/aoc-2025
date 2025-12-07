@@ -13,7 +13,6 @@ def main():
     paths = [
         root / "input" / (day + ".txt"),
         root / "sample-input" / (day + ".txt"),
-        root / "solutions" / (day + ".py"),
     ]
 
     for p in paths:
@@ -23,8 +22,10 @@ def main():
         else:
             print(f"skipping {p.name} - already exists!")
 
-    paths[2].write_text(
-        f"""from utils.SolutionBase import SolutionBase
+    py_path = root / "solutions" / (day + ".py")
+    if not py_path.exists():
+        py_path.write_text(
+            f"""from utils.SolutionBase import SolutionBase
 
 
 class Solution(SolutionBase):
@@ -36,10 +37,11 @@ class Solution(SolutionBase):
 
 
 if __name__ == "__main__":
-    solution = Solution("sample-input/{day}.txt")
-    print(solution.solve(1))
+    Solution("sample-input/{day}.txt").solve(1)
 """
-    )
+        )
+    else:
+        print(f"skipping {p.name} - already exists!")
 
 
 if __name__ == "__main__":
