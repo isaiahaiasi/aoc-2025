@@ -32,32 +32,16 @@ class Solution(SolutionBase):
         y1, y2 = (a[1], b[1]) if a[1] < b[1] else (b[1], a[1])
         return (x1, y1), (x2, y2)
 
-    def inside(self, a: vec2, b: vec2, v: int) -> bool:
-        """
-        Return if point v is inside the rect defined by (a, b)
-        (Sharing an edge does not count as "inside")
-        """
-        return a[0] < v[0] < b[0] and a[1] < v[1] < b[1]
+    def aabb_intersect(self, a1, a2, b1, b2) -> bool:
+        """Use AABB collision detection to see if line segment intersects rect"""
+        return not (
+            a1[0] >= b2[0]  # a right of b
+            or a2[0] <= b1[0]  # a left of b
+            or a2[1] <= b1[1]  # a above b
+            or a1[1] >= b2[1]  # a below b
+        )
 
-    def intersect_rect(self, rect1: vec2, rect2: vec2, line1: vec2, line2: vec2):
-        """Return if line (line1, line2) intersects rect (rect1, rect1)"""
-        # 1. either b1 or b2 is inside (a1, a2)
-        if self.inside(rect1, rect2, line1) or self.inside(rect1, rect2, line2):
-            return True
-
-        # 2. vertical line intersects (without either point specifically inside)
-        if line1[0] == line2[0] and rect1[0] < line1[0] < rect2[0]:
-            if line1[1] <= rect1[1] and line2[1] >= rect2[1]:
-                return True
-
-        # 3. horizontal line intersects (without either point specifically inside)
-        if line1[1] == line2[1] and rect1[1] < line1[1] < rect2[1]:
-            if line1[0] <= rect1[0] and line2[0] >= rect2[0]:
-                return True
-
-        return False
-
-    def no_lines_intersect_rect(self, rect1_idx: int, rect2_idx: int) -> bool:
+    def intersects_any_segment(self, rect1_idx: int, rect2_idx: int) -> bool:
         """
         Test given rect against all line segments.
         Return if no line segments intersect.
@@ -65,10 +49,10 @@ class Solution(SolutionBase):
         a1, a2 = self.sort_vecs(self.data[rect1_idx], self.data[rect2_idx])
         for i in range(self.size):
             b1, b2 = self.sort_vecs(self.data[i - 1], self.data[i])
-            if self.intersect_rect(a1, a2, b1, b2):
-                return False
+            if self.aabb_intersect(a1, a2, b1, b2):
+                return True
 
-        return True
+        return False
 
     def part1(self) -> int:
         # naive n^2 solution because why not
@@ -80,7 +64,10 @@ class Solution(SolutionBase):
         return res
 
     def part2(self) -> int:
+        # NOTE: In the future, maybe try with path compression?
+
         # Get min-heap of the negative area of all rects
+        # (Simple sort is nominally more performant for given inputs, but where's the fun in that?)
         heap = []
         for i in range(self.size):
             for j in range(i + 1, self.size):
@@ -90,7 +77,7 @@ class Solution(SolutionBase):
         for _ in range(len(heap)):
             area, a_idx, b_idx = heapq.heappop(heap)
 
-            if self.no_lines_intersect_rect(a_idx, b_idx):
+            if not self.intersects_any_segment(a_idx, b_idx):
                 # print(-area, self.data[a_idx], self.data[b_idx], a_idx, b_idx)
                 return -area
 
@@ -98,4 +85,4 @@ class Solution(SolutionBase):
 
 
 if __name__ == "__main__":
-    Solution("input/day09.txt").solve(2, benchmark=1)
+    Solution("input/day09.txt").solve(2, benchmark=5)
