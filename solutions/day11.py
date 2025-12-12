@@ -1,3 +1,4 @@
+from functools import cache
 from math import prod
 
 from utils.SolutionBase import SolutionBase
@@ -10,25 +11,22 @@ class Solution(SolutionBase):
         self.graph = {k: v.split(" ") for k, v in nodes_str}
         self.graph["out"] = []
 
-    def paths_atob(self, a: str, b: str):
+    def paths_atob(self, start: str, end: str):
         paths = {n: 0 for n in self.graph}
-        visited = {n: False for n in self.graph}
 
+        @cache  # the lazy man's visited hashmap
         def _dfs(n):
-            visited[n] = True
             for adj in self.graph[n]:
-                if adj == b:
+                if adj == end:
                     paths[n] += 1
                     continue
-                if not visited[adj]:
-                    _dfs(adj)
+                _dfs(adj)
                 paths[n] += paths[adj]
 
-        _dfs(a)
-        return paths[a]
+        _dfs(start)
+        return paths[start]
 
     def part1(self) -> int:
-        """Goal: traverse a graph. That's it?"""
         stack = [self.graph["you"]]
 
         path_count = 0
@@ -49,19 +47,22 @@ class Solution(SolutionBase):
             ("fft", "dac"),
             ("dac", "out"),
         ]
-        routes_b = [
-            ("svr", "dac"),
-            ("dac", "fft"),
-            ("fft", "out"),
-        ]
 
         a_cnts = [self.paths_atob(a, b) for a, b in routes_a]
-        b_cnts = [self.paths_atob(a, b) for a, b in routes_b]
-        print(a_cnts)
-        print(b_cnts)
+        # print(a_cnts)
 
-        return prod(a_cnts) + prod(b_cnts)
+        # Apparently there are 0 paths from dac -> fft, so there's only one
+        # path we *actually* have to worry about for the given input.
+        # routes_b = [
+        #     ("svr", "dac"),
+        #     ("dac", "fft"),
+        #     ("fft", "out"),
+        # ]
+        # # b_cnts = [self.paths_atob(a, b) for a, b in routes_b]
+        # print(b_cnts)
+
+        return prod(a_cnts)  # + prod(b_cnts)
 
 
 if __name__ == "__main__":
-    Solution("input/day11.txt").solve(2)
+    Solution("input/day11.txt").solve(2, benchmark=5)

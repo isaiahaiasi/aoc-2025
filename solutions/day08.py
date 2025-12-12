@@ -23,21 +23,25 @@ class UnionFind:
     def union(self, i: int, j: int) -> bool:
         """
         Joins vertex i & j into a single Union.
-        Returns False i & j were already a Union, otherwise True.
+        Returns if i & j were NOT already a Union.
         """
         pi, pj = self.find(i), self.find(j)
         if pi == pj:
             return False
 
         # Merge the smaller tree into the larger one.
-        if self.sizes[pi] < self.sizes[pj]:
-            self.parents[pi] = pj
+        if self.sizes[i] < self.sizes[pj]:
+            self.parents[pi] = self.find(self.parents[pj])
             self.sizes[pj] += self.sizes[pi]
         else:
-            self.parents[pj] = pi
+            self.parents[pj] = self.find(self.parents[pi])
             self.sizes[pi] += self.sizes[pj]
 
         return True
+
+    def has_disjoint(self):
+        v = self.parents[0]
+        return not all(n == v for n in self.parents)
 
 
 class Solution(SolutionBase):
@@ -64,7 +68,7 @@ class Solution(SolutionBase):
         return distances
 
     def part1(self) -> int:
-        # 1. Sort by shortest distance pair using heap
+        # 1. Get sorted distances.
         # 2. Build graph of connections using Union-Find to easily get disjoint set.
         # 3. Get size of all unions, sort, RETURN prod([top 3])
         distances = self.get_distances()
@@ -91,11 +95,11 @@ class Solution(SolutionBase):
 
             # unionfind.parents is not perfectly flat,
             # so we still have to find() each parent
-            for i in range(self.size):
+            for i in range(i_idx + 1, j_idx):
                 unionfind.find(i)
 
             # We know all vertices are in the same circuit if they all have the same parent.
-            if len(set(unionfind.parents)) == 1:
+            if not unionfind.has_disjoint():
                 return self.data[i_idx][0] * self.data[j_idx][0]
         return -1
 

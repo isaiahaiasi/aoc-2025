@@ -1,4 +1,8 @@
+# ruff: noqa: F403
+# ruff: noqa: F405
 from collections import deque
+
+from z3 import *
 
 from utils.SolutionBase import SolutionBase
 
@@ -86,8 +90,30 @@ class Solution(SolutionBase):
         return sum([solve_row(g, b) for g, b in self.part1_parse()])
 
     def part2(self) -> int:
-        raise NotImplementedError
+        """
+        I don't know squat about linear algebra or systems of equations,
+        so I straight up cheated on this one. Sorry (not that sorry).
+        """
+        total = 0
+        for joltages, buttons in self.part2_parse():
+            solver = Solver()
+            bvars = [Int(f"a{n}") for n in range(len(buttons))]
+            for b in bvars:
+                solver.add(b >= 0)
+
+            for i, v in enumerate(joltages):
+                vvars = [bvars[j] for j, btn in enumerate(buttons) if i in btn]
+                solver.add(Sum(vvars) == v)
+
+            while solver.check() == sat:
+                model = solver.model()
+                n = sum([model[d].as_long() for d in model])
+                solver.add(Sum(bvars) < n)
+
+            total += n
+
+        return total
 
 
 if __name__ == "__main__":
-    Solution("input/day10.txt").solve(1, benchmark=100)
+    Solution("input/day10.txt").solve(2)

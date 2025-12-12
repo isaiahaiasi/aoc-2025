@@ -24,6 +24,11 @@ class Solution(SolutionBase):
         x2, y2 = b
         return (abs(x2 - x1) + 1) * (abs(y2 - y1) + 1)
 
+    def square_distance(self, a, b):
+        x1, y1 = a
+        x2, y2 = b
+        return (x2 - x1) ** 2 + (y2 - y1) ** 2
+
     def sort_vecs(self, a: vec2, b: vec2) -> tuple[vec2, vec2]:
         """
         Returns (top-left, bottom-right) expression of square described by a, b.
@@ -41,14 +46,13 @@ class Solution(SolutionBase):
             or a1[1] >= b2[1]  # a below b
         )
 
-    def intersects_any_segment(self, rect1_idx: int, rect2_idx: int) -> bool:
+    def intersects_any_segment(self, rect1_idx, rect2_idx, segments):
         """
         Test given rect against all line segments.
         Return if no line segments intersect.
         """
         a1, a2 = self.sort_vecs(self.data[rect1_idx], self.data[rect2_idx])
-        for i in range(self.size):
-            b1, b2 = self.sort_vecs(self.data[i - 1], self.data[i])
+        for b1, b2 in segments:
             if self.aabb_intersect(a1, a2, b1, b2):
                 return True
 
@@ -64,21 +68,25 @@ class Solution(SolutionBase):
         return res
 
     def part2(self) -> int:
-        # NOTE: In the future, maybe try with path compression?
-
         # Get min-heap of the negative area of all rects
-        # (Simple sort is nominally more performant for given inputs, but where's the fun in that?)
         heap = []
         for i in range(self.size):
             for j in range(i + 1, self.size):
-                heapq.heappush(heap, (-self.area(self.data[i], self.data[j]), i, j))
+                heap.append((-self.area(self.data[i], self.data[j]), i, j))
+        heapq.heapify(heap)
 
-        # Go through the heap and return the first result where no line segments intersect
+        # Return the first result from heap where no line segments intersect
+        # Get segments, pre-"sort" the points for easier AABB, and sort by length.
+        # Length optimization -> longer = more likely to intersect something.
+        segments = []
+        for i in range(self.size):
+            segments.append(self.sort_vecs(self.data[i - 1], self.data[i]))
+        segments.sort(key=lambda a: -self.square_distance(a[0], a[1]))
+
         for _ in range(len(heap)):
             area, a_idx, b_idx = heapq.heappop(heap)
 
-            if not self.intersects_any_segment(a_idx, b_idx):
-                # print(-area, self.data[a_idx], self.data[b_idx], a_idx, b_idx)
+            if not self.intersects_any_segment(a_idx, b_idx, segments):
                 return -area
 
         return -1
